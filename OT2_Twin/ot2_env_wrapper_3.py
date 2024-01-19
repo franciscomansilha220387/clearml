@@ -30,7 +30,8 @@ class OT2Env(gym.Env):
             if seed is not None:
                 np.random.seed(seed)
 
-            self.previous_distance = np.inf
+            # Calculate current distance to goal  
+            self.previous_distance = 0
 
             # Reset the state of the environment to an initial state
             # set a random goal position for the agent, consisting of x, y, and z coordinates within the working area (you determined these values in the previous datalab task)
