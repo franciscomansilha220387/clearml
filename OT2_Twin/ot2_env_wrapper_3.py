@@ -31,7 +31,7 @@ class OT2Env(gym.Env):
                 np.random.seed(seed)
 
             # Calculate current distance to goal  
-            self.previous_distance = 0
+            self.previous_distance = 1
 
             # Reset the state of the environment to an initial state
             # set a random goal position for the agent, consisting of x, y, and z coordinates within the working area (you determined these values in the previous datalab task)
@@ -103,7 +103,7 @@ class OT2Env(gym.Env):
                 reward = 1000  # Large reward for reaching the goal
                 terminated = True
             else:
-                reward = improvement*100  # Reward is proportional to improvement
+                reward = improvement*10  # Reward is proportional to improvement
                 terminated = False
 
             # Check for truncation
