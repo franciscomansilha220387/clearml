@@ -2,7 +2,7 @@ from stable_baselines3 import PPO
 import gymnasium as gym
 import time
 import os
-from ot2_env_wrapper_3 import OT2Env
+from ot2_env_wrapper_4 import OT2Env
 import wandb
 from wandb.integration.sb3 import WandbCallback
 import argparse
