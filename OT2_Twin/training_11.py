@@ -47,7 +47,7 @@ model = PPO('MlpPolicy', wrapped_env, verbose=1,
             tensorboard_log=f"runs/{run.id}",)
 
 # create wandb callback
-wandb_callback = WandbCallback(model_save_freq=10000,
+wandb_callback = WandbCallback(model_save_freq=1000,
                                 model_save_path=f"models/{run.id}",
                                 verbose=2,
                                 )
