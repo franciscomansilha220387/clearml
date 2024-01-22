@@ -3,6 +3,10 @@ from gymnasium import spaces
 import numpy as np
 from sim_class import Simulation
 
+
+
+
+
 class OT2Env(gym.Env):
     def __init__(self, render=False, max_steps=1000):
         super(OT2Env, self).__init__()
@@ -21,12 +25,14 @@ class OT2Env(gym.Env):
         # Define observation space with only pipette_position
         self.observation_space = spaces.Box(-np.inf, np.inf, (6,), np.float32)
 
+        self.previous_distance = 1
+
         # keep track of the number of steps
         self.steps = 0
 
         working_envelope = {'min_x': -0.1871, 'max_x': 0.253, 'min_y': -0.1706, 'max_y': 0.2195, 'min_z': 0.1197, 'max_z': 0.2898}
 
-            # Generate random values within the specified range for each axis
+        # Generate random values within the specified range for each axis
         random_x = np.random.uniform(working_envelope['min_x'], working_envelope['max_x'])
         random_y = np.random.uniform(working_envelope['min_y'], working_envelope['max_y'])
         random_z = np.random.uniform(working_envelope['min_z'], working_envelope['max_z'])
@@ -35,10 +41,15 @@ class OT2Env(gym.Env):
         self.goal_position = np.array([random_x, random_y, random_z], dtype=np.float32)
 
 
+
+
+
     def reset(self, seed=None):
             # being able to set a seed is required for reproducibility
             if seed is not None:
                 np.random.seed(seed)
+
+            observation = self.sim.reset()
 
             # Calculate current distance to goal  
             self.previous_distance = 1
@@ -56,21 +67,12 @@ class OT2Env(gym.Env):
             # Create the random goal position as a NumPy array
             self.goal_position = np.array([random_x, random_y, random_z], dtype=np.float32)
 
-            # Call the environment reset function
-            observation = self.sim.reset(num_agents=1)
-            
-            #print(observation)
+            robot_id = list(observation.keys())[0]
 
-            # Get the first key in the dictionary (robot ID)
-            robot_id = next(iter(observation))
-
-            # now we need to process the observation and extract the relevant information, the pipette position, convert it to a numpy array, and append the goal position and make sure the array is of type np.float32
-            pipette_position = observation[robot_id]['pipette_position']
+            observation = np.array(observation[robot_id]['pipette_position'], dtype=float)
 
             # Append the goal position to the pipette position
-            observation = np.concatenate([pipette_position, self.goal_position]).astype(np.float32)
-            
-            #print(observation)
+            observation = np.hstack((observation, self.goal_position), dtype=np.float32)
             
             # Reset the number of steps
             self.steps = 0
@@ -88,19 +90,15 @@ class OT2Env(gym.Env):
             # Call the environment step function
             observation = self.sim.run([action]) # Why do we need to pass the action as a list? Because the simulation class expects a list of actions
 
+            robot_id = list(observation.keys())[0]
 
-            # Get the first key in the dictionary (robot ID)
-            robot_id = next(iter(observation))
+            observation = np.array(observation[robot_id]['pipette_position'], dtype=float)
 
-            # now we need to process the observation and extract the relevant information, the pipette position, convert it to a numpy array, and append the goal position and make sure the array is of type np.float32
-            pipette_position = observation[robot_id]['pipette_position']
-
-            # now we need to process the observation and extract the relevant information, the pipette position, convert it to a numpy array, and append the goal position and make sure the array is of type np.float32
-            #pipette_position = observation['robotId_1']['pipette_position']
-            observation = np.concatenate([pipette_position, self.goal_position]).astype(np.float32)
+            # Append the goal position to the pipette position
+            observation = np.hstack((observation, self.goal_position), dtype=np.float32)
 
             # Calculate current distance to goal
-            distance_to_goal = np.linalg.norm(pipette_position - self.goal_position)
+            distance_to_goal = np.linalg.norm(observation[:3] - self.goal_position)
 
             # Calculate improvement
             improvement = self.previous_distance - distance_to_goal
